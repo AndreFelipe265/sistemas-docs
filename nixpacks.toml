@@ -1,11 +1,11 @@
 [variables]
-    PHP_VERSION = '8.1'
+    PHP_VERSION = '8.3'
 
 [phases.setup]
-    nixPkgs = ['php81', 'php81Packages.composer', 'nodejs']
+    nixPkgs = ['php83', 'php83Packages.composer', 'nodejs']
 
 [phases.install]
     cmds = ['composer install --frozen-lockfile --no-dev']
 
 [phases.build]
-    cmds = ['npm install && npm run build', 'php artisan optimize']
+    cmds = ['php artisan optimize']
