@@ -7,19 +7,19 @@ use Illuminate\Http\Request;
 
 class ClienteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return response()->json(Cliente::all());
+        return response()->json(
+            Cliente::where('user_id', $request->user()->id)->latest()->get()
+        );
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $cliente = Cliente::find($id);
+        $cliente = Cliente::where('user_id', $request->user()->id)->find($id);
 
         if (!$cliente) {
-            return response()->json([
-                'message' => 'Cliente não encontrado'
-            ], 404);
+            return response()->json(['message' => 'Cliente nao encontrado'], 404);
         }
 
         return response()->json($cliente);
@@ -27,7 +27,7 @@ class ClienteController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $data = $request->validate([
             'nome' => 'required|string|max:255',
             'cpf' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
@@ -38,22 +38,23 @@ class ClienteController extends Controller
             'cep' => 'nullable|string|max:20',
         ]);
 
-        $cliente = Cliente::create($request->all());
+        $cliente = Cliente::create([
+            ...$data,
+            'user_id' => $request->user()->id,
+        ]);
 
         return response()->json($cliente, 201);
     }
 
     public function update(Request $request, $id)
     {
-        $cliente = Cliente::find($id);
+        $cliente = Cliente::where('user_id', $request->user()->id)->find($id);
 
         if (!$cliente) {
-            return response()->json([
-                'message' => 'Cliente não encontrado'
-            ], 404);
+            return response()->json(['message' => 'Cliente nao encontrado'], 404);
         }
 
-        $request->validate([
+        $data = $request->validate([
             'nome' => 'sometimes|required|string|max:255',
             'cpf' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
@@ -64,25 +65,21 @@ class ClienteController extends Controller
             'cep' => 'nullable|string|max:20',
         ]);
 
-        $cliente->update($request->all());
+        $cliente->update($data);
 
         return response()->json($cliente);
     }
 
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
-        $cliente = Cliente::find($id);
+        $cliente = Cliente::where('user_id', $request->user()->id)->find($id);
 
         if (!$cliente) {
-            return response()->json([
-                'message' => 'Cliente não encontrado'
-            ], 404);
+            return response()->json(['message' => 'Cliente nao encontrado'], 404);
         }
 
         $cliente->delete();
 
-        return response()->json([
-            'message' => 'Cliente deletado com sucesso'
-        ]);
+        return response()->json(['message' => 'Cliente deletado com sucesso']);
     }
 }
